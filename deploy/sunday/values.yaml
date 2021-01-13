@@ -1,0 +1,31 @@
+# Default values for sunday.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+postgres:
+  image:
+    repository: timescale/timescaledb
+    tag: 2.0.0-pg12
+    pullPolicy: Always
+  password: "password"
+
+persistence:
+  accessMode: ReadWriteOnce
+  size: 25Gi
+  storageClass: "-"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+vernemq:
+  additionalEnv:
+  - name: DOCKER_VERNEMQ_ACCEPT_EULA
+    value: "yes"
+  - name: DOCKER_VERNEMQ_ALLOW_ANONYMOUS
+    value: "on"
+
+timescaledb-single:
+  clusterName: "sunday-timescaledb"
