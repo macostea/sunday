@@ -17,5 +17,8 @@ namespace Sunday.Data
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
         }
+
+        public DbSet<Device> Devices { get; set; }
+        public DbSet<DeviceData> Data { get; set; }
     }
 }

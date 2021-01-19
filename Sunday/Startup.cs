@@ -11,6 +11,7 @@ using Sunday.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Sunday
 {
@@ -27,8 +28,16 @@ namespace Sunday
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(
+                    Configuration.GetConnectionString("DefaultConnection"),
+                    noa =>
+                    {
+                        noa.RemoteCertificateValidationCallback((s, c, ch, sslPolicyErrors) =>
+                        {
+                            var dbCert = X509Certificate.CreateFromCertFile("tls.crt");
+                            return dbCert.Equals(c);
+                        });
+                    }));
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 

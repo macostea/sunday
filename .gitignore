@@ -341,3 +341,5 @@ TestResults/
 .sonarqube/
 
 app.db
+tls.crt
+
