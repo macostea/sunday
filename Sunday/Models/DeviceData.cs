@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace Sunday.Models
 {
@@ -13,6 +14,7 @@ namespace Sunday.Models
         public double Value { get; set; }
 
         public Guid DeviceID { get; set; }
+        [JsonIgnore]
         public Device Device { get; set; }
     }
 }

@@ -50,7 +50,10 @@ namespace Sunday
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            });
             services.AddRazorPages();
 
             // In production, the React files will be served from this directory
@@ -58,11 +61,19 @@ namespace Sunday
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sunday API");
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
