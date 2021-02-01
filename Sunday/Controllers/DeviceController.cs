@@ -26,8 +26,8 @@ namespace Sunday.Controllers
             _dbContext = dbContext;
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetDevices(string userId)
+        [HttpGet]
+        public async Task<IActionResult> GetDevices([FromQuery]string userId)
         {
             var devices = await _dbContext.Devices.Where(d => d.ApplicationUserID.Equals(userId)).ToListAsync();
             return Ok(devices);
@@ -36,21 +36,54 @@ namespace Sunday.Controllers
         [HttpPost]
         public async Task<IActionResult> AddDevice([FromBody]Device device)
         {
-            var user = await _dbContext.Users.SingleAsync((ApplicationUser arg) => arg.Id.Equals(device.ApplicationUserID));
-            if (user == null)
+            try
             {
-                return NotFound();
+                _ = await _dbContext.Users.SingleAsync((ApplicationUser arg) => arg.Id.Equals(device.ApplicationUserID));
             }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogDebug("Failed to find user: {0}", e);
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+
             var addedDevice = await _dbContext.Devices.AddAsync(device);
 
-            if (addedDevice == null)
+            try
             {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("Failed to add entity: {0}", e);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            await _dbContext.SaveChangesAsync();
-
             return Ok(device);
+        }
+
+        [HttpGet("{deviceId}")]
+        public async Task<IActionResult> GetData(Guid deviceId, [FromQuery]DateTime startTime, [FromQuery]DateTime endTime)
+        {
+            try
+            {
+                _ = await _dbContext.Devices.SingleAsync((Device d) => d.ID.Equals(deviceId));
+            }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogDebug("Failed to find device: {0}", e);
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+
+            try
+            {
+                var data = await _dbContext.Data.Where((DeviceData d) => d.DeviceID.Equals(deviceId) && d.Timestamp >= startTime && d.Timestamp <= endTime).OrderBy((DeviceData d) => d.Timestamp).ToListAsync();
+                return Ok(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("Failed to query data for device: {0}", e);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import authService from './api-authorization/AuthorizeService'
 
 export class UserDevices extends Component {
@@ -20,6 +21,7 @@ export class UserDevices extends Component {
                     <tr>
                         <th>Id</th>
                         <th>Name</th>
+                        <th>See Data</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,6 +29,7 @@ export class UserDevices extends Component {
                         <tr key={device.id}>
                             <td>{device.id}</td>
                             <td>{device.name}</td>
+                            <td><Link to={`/data/${device.id}`}>Data</Link></td>
                         </tr>
                     )}
                 </tbody>
@@ -50,7 +53,7 @@ export class UserDevices extends Component {
     async populateDevicesData() {
         const token = await authService.getAccessToken();
         const userId = await authService.getUser();
-        const response = await fetch(`device/${userId.sub}`, {
+        const response = await fetch(`device?userId=${userId.sub}`, {
             headers: !token ? {} : { 'Authorization': `Bearer ${token}` }
         });
 
